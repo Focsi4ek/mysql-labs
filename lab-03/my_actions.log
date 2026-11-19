@@ -1,0 +1,24 @@
+event_time	command_type	argument
+2026-11-18 17:06:49.280015	Query	SELECT * FROM sql_practice.my_actions ORDER BY event_time DESC
+2026-11-18 17:06:49.279803	Query	select @@version_comment limit 1
+2026-11-18 17:05:15.181895	Query	SELECT * FROM customers WHERE id = 4
+2026-11-18 17:05:14.801495	Query	UPDATE customers SET city = 'Екатеринбург' WHERE id = 4
+2026-11-18 17:04:34.164333	Query	SELECT c.name, o.id AS order_id, o.amount \nFROM customers c \nLEFT JOIN orders o ON c.id = o.customer_id
+2026-11-18 17:02:38.263990	Query	ALTER TABLE customers DROP COLUMN phone
+2026-11-18 17:02:38.237000	Query	ALTER TABLE customers ADD COLUMN phone VARCHAR(20)
+2026-11-18 17:02:38.231266	Query	UPDATE customers SET city = 'Екатеринбург' WHERE id = 4
+2026-11-18 17:02:38.228933	Query	SELECT name, city FROM customers WHERE city = 'Москва' UNION SELECT name, city FROM customers WHERE city = 'Казань'
+2026-11-18 17:02:38.223676	Query	SELECT name FROM customers WHERE id IN (SELECT customer_id FROM orders WHERE amount > 1000)
+2026-11-18 17:02:38.220002	Query	SELECT c.name, o.id AS order_id, o.amount FROM customers c LEFT JOIN orders o ON c.id = o.customer_id
+2026-11-18 17:02:38.216997	Query	SELECT c.name, o.amount FROM customers c INNER JOIN orders o ON c.id = o.customer_id
+2026-11-18 17:02:38.214422	Query	SELECT * FROM orders ORDER BY amount DESC LIMIT 3
+2026-11-18 17:02:38.212863	Query	SELECT * FROM customers WHERE city = 'Москва'
+2026-11-18 16:59:14.474131	Query	SELECT * FROM orders
+2026-11-18 16:59:14.473447	Query	SELECT * FROM customers
+2026-11-18 16:59:03.445801	Query	INSERT INTO orders (customer_id, order_date, amount, status) VALUES\n  (1, '2026-10-01', 1500.00, 'paid'), (1, '2026-10-05', 2300.50, 'paid'),\n  (2, '2026-10-03', 800.00, 'new'), (3, '2026-10-07', 4200.00, 'paid'),\n  (3, '2026-10-10', 1100.00, 'cancelled'), (4, '2026-10-12', 950.00, 'new')
+2026-11-18 16:59:02.795275	Query	INSERT INTO customers (name, email, city) VALUES\n  ('Иван Иванов', 'ivan@example.com', 'Москва'), ('Пётр Петров', 'petr@example.com', 'Санкт-Петербург'),\n  ('Мария Сидорова', 'maria@example.com', 'Москва'), ('Алексей Смирнов', 'alex@example.com', 'Казань'),\n  ('Ольга Кузнецова', 'olga@example.com', 'Новосибирск')
+2026-11-18 16:59:02.760504	Query	CREATE TABLE orders (\n    id INT AUTO_INCREMENT PRIMARY KEY, customer_id INT NOT NULL, order_date DATE NOT NULL, amount DECIMAL(10, 2) NOT NULL, status VARCHAR(20) DEFAULT 'new', FOREIGN KEY (customer_id) REFERENCES customers(id)\n) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+2026-11-18 16:59:02.728966	Query	CREATE TABLE customers (\n    id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL UNIQUE, city VARCHAR(100), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+2026-11-18 16:59:02.711702	Query	show tables
+2026-11-18 16:59:02.707672	Query	show databases
+2026-11-18 16:59:02.695215	Query	CREATE DATABASE sql_practice CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci

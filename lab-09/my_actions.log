@@ -1,0 +1,220 @@
+2026-11-18T21:10:12.062877Z	    8 Query	CREATE DATABASE normalization_all CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+2026-11-18T21:10:12.071469Z	    8 Query	SELECT DATABASE()
+2026-11-18T21:10:12.082803Z	    8 Query	CREATE TABLE sales_bad (sale_id INT AUTO_INCREMENT PRIMARY KEY, customer_name VARCHAR(100), customer_city VARCHAR(100), product_name VARCHAR(100), price DECIMAL(10,2), quantity INT, sale_date DATE)
+2026-11-18T21:10:12.115678Z	    8 Query	INSERT INTO sales_bad (customer_name, customer_city, product_name, price, quantity, sale_date) VALUES
+2026-11-18T21:10:12.180356Z	    8 Query	CREATE TABLE customers_1 (cust_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), city VARCHAR(100))
+2026-11-18T21:10:12.219701Z	    8 Query	CREATE TABLE products_1 (prod_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), price DECIMAL(10,2))
+2026-11-18T21:10:12.242550Z	    8 Query	CREATE TABLE sales_1 (sale_id INT AUTO_INCREMENT PRIMARY KEY, cust_id INT, sale_date DATE, FOREIGN KEY (cust_id) REFERENCES customers_1(cust_id))
+2026-11-18T21:10:12.268380Z	    8 Query	CREATE TABLE sale_items_1 (sale_id INT, prod_id INT, quantity INT, PRIMARY KEY(sale_id, prod_id), FOREIGN KEY (sale_id) REFERENCES sales_1(sale_id), FOREIGN KEY (prod_id) REFERENCES products_1(prod_id))
+2026-11-18T21:10:12.294078Z	    8 Query	INSERT INTO customers_1 (name, city) SELECT DISTINCT customer_name, customer_city FROM sales_bad
+2026-11-18T21:10:12.298347Z	    8 Query	INSERT INTO products_1 (name, price) SELECT DISTINCT product_name, price FROM sales_bad
+2026-11-18T21:10:12.303837Z	    8 Query	INSERT INTO sales_1 (sale_id, cust_id, sale_date) SELECT sb.sale_id, c.cust_id, sb.sale_date FROM sales_bad sb JOIN customers_1 c ON sb.customer_name = c.name AND sb.customer_city = c.city
+2026-11-18T21:10:12.309427Z	    8 Query	INSERT INTO sale_items_1 (sale_id, prod_id, quantity) SELECT sb.sale_id, p.prod_id, sb.quantity FROM sales_bad sb JOIN products_1 p ON sb.product_name = p.name AND sb.price = p.price
+2026-11-18T21:10:12.314092Z	    8 Query	DROP TABLE sales_bad
+2026-11-18T21:10:12.330322Z	    8 Query	CREATE TABLE company_bad (emp_id INT AUTO_INCREMENT PRIMARY KEY, emp_name VARCHAR(100), dept_name VARCHAR(100), dept_location VARCHAR(100), project_name VARCHAR(100), project_budget DECIMAL(10,2))
+2026-11-18T21:10:12.354621Z	    8 Query	INSERT INTO company_bad (emp_name, dept_name, dept_location, project_name, project_budget) VALUES
+2026-11-18T21:10:12.359571Z	    8 Query	CREATE TABLE departments_2 (dept_id INT AUTO_INCREMENT PRIMARY KEY, dept_name VARCHAR(100), dept_location VARCHAR(100))
+2026-11-18T21:10:12.379324Z	    8 Query	CREATE TABLE projects_2 (proj_id INT AUTO_INCREMENT PRIMARY KEY, project_name VARCHAR(100), project_budget DECIMAL(10,2), dept_id INT, FOREIGN KEY (dept_id) REFERENCES departments_2(dept_id))
+2026-11-18T21:10:12.404551Z	    8 Query	CREATE TABLE employees_2 (emp_id INT AUTO_INCREMENT PRIMARY KEY, emp_name VARCHAR(100), dept_id INT, FOREIGN KEY (dept_id) REFERENCES departments_2(dept_id))
+2026-11-18T21:10:12.430482Z	    8 Query	INSERT INTO departments_2 (dept_name, dept_location) SELECT DISTINCT dept_name, dept_location FROM company_bad
+2026-11-18T21:10:12.436331Z	    8 Query	INSERT INTO projects_2 (project_name, project_budget, dept_id) SELECT DISTINCT cb.project_name, cb.project_budget, d.dept_id FROM company_bad cb JOIN departments_2 d ON cb.dept_name = d.dept_name AND cb.dept_location = d.dept_location
+2026-11-18T21:10:12.442311Z	    8 Query	INSERT INTO employees_2 (emp_id, emp_name, dept_id) SELECT cb.emp_id, cb.emp_name, d.dept_id FROM company_bad cb JOIN departments_2 d ON cb.dept_name = d.dept_name AND cb.dept_location = d.dept_location
+2026-11-18T21:10:12.447052Z	    8 Query	DROP TABLE company_bad
+2026-11-18T21:10:12.464522Z	    8 Query	CREATE TABLE orders_bad (order_id INT AUTO_INCREMENT PRIMARY KEY, client_name VARCHAR(100), client_address VARCHAR(100), rep_name VARCHAR(100), rep_phone VARCHAR(20), product_name VARCHAR(100), order_amount DECIMAL(10,2))
+2026-11-18T21:10:12.491992Z	    8 Query	INSERT INTO orders_bad (client_name, client_address, rep_name, rep_phone, product_name, order_amount) VALUES
+2026-11-18T21:10:12.497589Z	    8 Query	CREATE TABLE clients_3 (client_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), address VARCHAR(100))
+2026-11-18T21:10:12.519100Z	    8 Query	CREATE TABLE representatives_3 (rep_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), phone VARCHAR(20))
+2026-11-18T21:10:12.542454Z	    8 Query	CREATE TABLE orders_3 (order_id INT AUTO_INCREMENT PRIMARY KEY, client_id INT, rep_id INT, FOREIGN KEY (client_id) REFERENCES clients_3(client_id), FOREIGN KEY (rep_id) REFERENCES representatives_3(rep_id))
+2026-11-18T21:10:12.573452Z	    8 Query	CREATE TABLE order_items_3 (order_id INT, product_name VARCHAR(100), amount DECIMAL(10,2), PRIMARY KEY(order_id, product_name), FOREIGN KEY (order_id) REFERENCES orders_3(order_id))
+2026-11-18T21:10:12.596071Z	    8 Query	INSERT INTO clients_3 (name, address) SELECT DISTINCT client_name, client_address FROM orders_bad
+2026-11-18T21:10:12.601890Z	    8 Query	INSERT INTO representatives_3 (name, phone) SELECT DISTINCT rep_name, rep_phone FROM orders_bad
+2026-11-18T21:10:12.607870Z	    8 Query	INSERT INTO orders_3 (order_id, client_id, rep_id) SELECT ob.order_id, c.client_id, r.rep_id FROM orders_bad ob JOIN clients_3 c ON ob.client_name = c.name AND ob.client_address = c.address JOIN representatives_3 r ON ob.rep_name = r.name AND ob.rep_phone = r.phone
+2026-11-18T21:10:12.612859Z	    8 Query	INSERT INTO order_items_3 (order_id, product_name, amount) SELECT order_id, product_name, order_amount FROM orders_bad
+2026-11-18T21:10:12.617555Z	    8 Query	DROP TABLE orders_bad
+2026-11-18T21:10:12.632834Z	    8 Query	CREATE TABLE catalog_bad (item_name VARCHAR(100), category_name VARCHAR(100), category_code VARCHAR(10), supplier_name VARCHAR(100), supplier_city VARCHAR(100), price DECIMAL(10,2))
+2026-11-18T21:10:12.658477Z	    8 Query	INSERT INTO catalog_bad VALUES
+2026-11-18T21:10:12.663203Z	    8 Query	CREATE TABLE categories_4 (cat_code VARCHAR(10) PRIMARY KEY, cat_name VARCHAR(100))
+2026-11-18T21:10:12.683677Z	    8 Query	CREATE TABLE suppliers_4 (supp_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), city VARCHAR(100))
+2026-11-18T21:10:12.705119Z	    8 Query	CREATE TABLE items_4 (item_id INT AUTO_INCREMENT PRIMARY KEY, item_name VARCHAR(100), cat_code VARCHAR(10), supp_id INT, price DECIMAL(10,2), FOREIGN KEY (cat_code) REFERENCES categories_4(cat_code), FOREIGN KEY (supp_id) REFERENCES suppliers_4(supp_id))
+2026-11-18T21:10:12.731868Z	    8 Query	INSERT INTO categories_4 (cat_code, cat_name) SELECT DISTINCT category_code, category_name FROM catalog_bad
+2026-11-18T21:10:12.736437Z	    8 Query	INSERT INTO suppliers_4 (name, city) SELECT DISTINCT supplier_name, supplier_city FROM catalog_bad
+2026-11-18T21:10:12.743206Z	    8 Query	INSERT INTO items_4 (item_name, cat_code, supp_id, price) SELECT cb.item_name, cb.category_code, s.supp_id, cb.price FROM catalog_bad cb JOIN suppliers_4 s ON cb.supplier_name = s.name AND cb.supplier_city = s.city
+2026-11-18T21:10:14.907665Z	    8 Query	DROP TABLE catalog_bad
+2026-11-18T21:10:52.238414Z	    8 Query	SELECT DATABASE()
+2026-11-18T21:10:52.239499Z	    8 Query	SHOW TABLES
+2026-11-18T21:10:52.242858Z	    8 Query	SELECT * FROM customers_1
+2026-11-18T21:10:52.244660Z	    8 Query	SELECT * FROM products_1
+2026-11-18T21:10:52.246200Z	    8 Query	SELECT * FROM sales_1
+2026-11-18T21:10:53.191507Z	    8 Query	SELECT * FROM sale_items_1
+2026-11-18T21:13:25.468317Z	    8 Query	SELECT * FROM departments_2
+2026-11-18T21:13:25.469841Z	    8 Query	SELECT * FROM employees_2
+2026-11-18T21:13:26.055232Z	    8 Query	SELECT * FROM projects_2
+2026-11-18T21:13:33.860379Z	    8 Query	SELECT * FROM departments_2
+2026-11-18T21:13:33.862397Z	    8 Query	SELECT * FROM employees_2
+2026-11-18T21:13:36.357613Z	    8 Query	SELECT * FROM projects_2
+2026-11-18T21:13:45.132364Z	    8 Query	SELECT * FROM departments_2
+2026-11-18T21:13:45.134059Z	    8 Query	SELECT * FROM employees_2
+2026-11-18T21:13:46.951062Z	    8 Query	SELECT * FROM projects_2
+2026-11-18T21:13:57.713998Z	    8 Query	SELECT * FROM departments_2
+2026-11-18T21:13:57.715383Z	    8 Query	SELECT * FROM employees_2
+2026-11-18T21:13:59.259302Z	    8 Query	SELECT * FROM projects_2
+2026-11-18T21:14:02.418370Z	    8 Query	SELECT * FROM departments_2
+2026-11-18T21:14:02.419144Z	    8 Query	SELECT * FROM employees_2
+2026-11-18T21:14:02.419576Z	    8 Query	SELECT * FROM projects_2
+2026-11-18T21:14:41.789116Z	    8 Query	SELECT * FROM clients_3
+2026-11-18T21:14:41.791134Z	    8 Query	SELECT * FROM representatives_3
+2026-11-18T21:14:41.792449Z	    8 Query	SELECT * FROM orders_3
+2026-11-18T21:14:42.578540Z	    8 Query	SELECT * FROM order_items_3
+2026-11-18T21:14:45.145462Z	    8 Query	SELECT * FROM clients_3
+2026-11-18T21:14:45.146202Z	    8 Query	SELECT * FROM representatives_3
+2026-11-18T21:14:45.146691Z	    8 Query	SELECT * FROM orders_3
+2026-11-18T21:14:45.147317Z	    8 Query	SELECT * FROM order_items_3
+2026-11-18T21:15:49.288127Z	    8 Query	SELECT * FROM categories_4
+2026-11-18T21:15:49.288875Z	    8 Query	SELECT * FROM suppliers_4
+2026-11-18T21:15:49.289542Z	    8 Query	SELECT * FROM items_4
+2026-11-18T21:16:38.290918Z	    9 Query	SET SESSION NET_READ_TIMEOUT= 86400, SESSION NET_WRITE_TIMEOUT= 86400
+2026-11-18T21:16:38.291076Z	    9 Query	SHOW VARIABLES LIKE 'gtid_mode'
+2026-11-18T21:16:38.294280Z	    9 Query	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ
+2026-11-18T21:16:38.294748Z	    9 Query	SELECT LOGFILE_GROUP_NAME, FILE_NAME, TOTAL_EXTENTS, INITIAL_SIZE, ENGINE, EXTRA FROM INFORMATION_SCHEMA.FILES WHERE ENGINE = 'ndbcluster' AND FILE_TYPE = 'UNDO LOG' AND FILE_NAME IS NOT NULL AND LOGFILE_GROUP_NAME IS NOT NULL AND LOGFILE_GROUP_NAME IN (SELECT DISTINCT LOGFILE_GROUP_NAME FROM INFORMATION_SCHEMA.FILES WHERE ENGINE = 'ndbcluster' AND FILE_TYPE = 'DATAFILE' AND TABLESPACE_NAME IN (SELECT DISTINCT TABLESPACE_NAME FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_SCHEMA IN ('normalization_all'))) GROUP BY LOGFILE_GROUP_NAME, FILE_NAME, ENGINE, TOTAL_EXTENTS, INITIAL_SIZE ORDER BY LOGFILE_GROUP_NAME
+2026-11-18T21:16:38.297600Z	    9 Query	SELECT DISTINCT TABLESPACE_NAME, FILE_NAME, LOGFILE_GROUP_NAME, EXTENT_SIZE, INITIAL_SIZE, ENGINE FROM INFORMATION_SCHEMA.FILES WHERE FILE_TYPE = 'DATAFILE' AND TABLESPACE_NAME IN (SELECT DISTINCT TABLESPACE_NAME FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_SCHEMA IN ('normalization_all')) ORDER BY TABLESPACE_NAME, LOGFILE_GROUP_NAME
+2026-11-18T21:16:38.298961Z	    9 Query	SHOW VARIABLES LIKE 'ndbinfo\_version'
+2026-11-18T21:16:38.302745Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.302887Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.303278Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.305605Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `categories_4`
+2026-11-18T21:16:38.305926Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.306686Z	    9 Query	SHOW TRIGGERS LIKE 'categories\_4'
+2026-11-18T21:16:38.307747Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.307939Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.308110Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'categories_4'
+2026-11-18T21:16:38.308627Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.309845Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.309978Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.310344Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.311953Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `clients_3`
+2026-11-18T21:16:38.312255Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.312960Z	    9 Query	SHOW TRIGGERS LIKE 'clients\_3'
+2026-11-18T21:16:38.313570Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.313710Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.313848Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'clients_3'
+2026-11-18T21:16:38.314056Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.315096Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.315214Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.315636Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.317171Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `customers_1`
+2026-11-18T21:16:38.317488Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.318162Z	    9 Query	SHOW TRIGGERS LIKE 'customers\_1'
+2026-11-18T21:16:38.318764Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.318888Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.319023Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'customers_1'
+2026-11-18T21:16:38.319229Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.320271Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.320386Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.320846Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.322220Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `departments_2`
+2026-11-18T21:16:38.322527Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.323253Z	    9 Query	SHOW TRIGGERS LIKE 'departments\_2'
+2026-11-18T21:16:38.323951Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.324073Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.324205Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'departments_2'
+2026-11-18T21:16:38.324411Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.325470Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.325587Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.325913Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.327293Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `employees_2`
+2026-11-18T21:16:38.327790Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.328610Z	    9 Query	SHOW TRIGGERS LIKE 'employees\_2'
+2026-11-18T21:16:38.329115Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.329235Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.329417Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'employees_2'
+2026-11-18T21:16:38.329634Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.330646Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.330766Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.331099Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.332664Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `items_4`
+2026-11-18T21:16:38.333088Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.333815Z	    9 Query	SHOW TRIGGERS LIKE 'items\_4'
+2026-11-18T21:16:38.334289Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.334460Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.334654Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'items_4'
+2026-11-18T21:16:38.334855Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.335884Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.336002Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.336328Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.337766Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `order_items_3`
+2026-11-18T21:16:38.338019Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.338537Z	    9 Query	SHOW TRIGGERS LIKE 'order\_items\_3'
+2026-11-18T21:16:38.339019Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.339140Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.339274Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'order_items_3'
+2026-11-18T21:16:38.339514Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.340524Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.340647Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.340977Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.342446Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `orders_3`
+2026-11-18T21:16:38.342698Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.343183Z	    9 Query	SHOW TRIGGERS LIKE 'orders\_3'
+2026-11-18T21:16:38.343756Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.343886Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.344019Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'orders_3'
+2026-11-18T21:16:38.344223Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.345236Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.345355Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.345688Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.347094Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `products_1`
+2026-11-18T21:16:38.347318Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.347843Z	    9 Query	SHOW TRIGGERS LIKE 'products\_1'
+2026-11-18T21:16:38.348339Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.348462Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.348678Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'products_1'
+2026-11-18T21:16:38.348891Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.349931Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.350051Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.350387Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.351917Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `projects_2`
+2026-11-18T21:16:38.352166Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.352759Z	    9 Query	SHOW TRIGGERS LIKE 'projects\_2'
+2026-11-18T21:16:38.353243Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.353364Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.353599Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'projects_2'
+2026-11-18T21:16:38.353843Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.354904Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.355024Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.355358Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.356828Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `representatives_3`
+2026-11-18T21:16:38.357066Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.357696Z	    9 Query	SHOW TRIGGERS LIKE 'representatives\_3'
+2026-11-18T21:16:38.358190Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.358315Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.358506Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'representatives_3'
+2026-11-18T21:16:38.358741Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.359815Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.359936Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.360272Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.361734Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `sale_items_1`
+2026-11-18T21:16:38.361980Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.362521Z	    9 Query	SHOW TRIGGERS LIKE 'sale\_items\_1'
+2026-11-18T21:16:38.363007Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.363128Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.363263Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'sale_items_1'
+2026-11-18T21:16:38.363495Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.364475Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.364589Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.364920Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.366332Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `sales_1`
+2026-11-18T21:16:38.366681Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.367177Z	    9 Query	SHOW TRIGGERS LIKE 'sales\_1'
+2026-11-18T21:16:38.367814Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.367981Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.368157Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'sales_1'
+2026-11-18T21:16:38.368406Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.369408Z	    9 Query	SET SQL_QUOTE_SHOW_CREATE=1
+2026-11-18T21:16:38.369520Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.369856Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.371285Z	    9 Query	SELECT /*!40001 SQL_NO_CACHE */ * FROM `suppliers_4`
+2026-11-18T21:16:38.371664Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.372131Z	    9 Query	SHOW TRIGGERS LIKE 'suppliers\_4'
+2026-11-18T21:16:38.372751Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'
+2026-11-18T21:16:38.372878Z	    9 Query	SET SESSION character_set_results = 'binary'
+2026-11-18T21:16:38.373016Z	    9 Query	SELECT COLUMN_NAME,                       JSON_EXTRACT(HISTOGRAM, '$."number-of-buckets-specified"')                FROM information_schema.COLUMN_STATISTICS                WHERE SCHEMA_NAME = 'normalization_all' AND TABLE_NAME = 'suppliers_4'
+2026-11-18T21:16:38.373223Z	    9 Query	SET SESSION character_set_results = 'utf8mb4'

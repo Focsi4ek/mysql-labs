@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Редакторы
+.vscode/
+.idea/
+*.swp

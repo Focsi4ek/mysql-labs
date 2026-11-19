@@ -1,0 +1,152 @@
+[1m[7m%[27m[1m[0m                                                                                                                                                                [0m[27m[24m[Jchris@MacBook-Pro-Chris products-mysql % [K[?2004h[7mdocker exec -it products-mysql mysql --default-character-set=utf8mb4 -uroot -p[27m[78D[27md[27mo[27mc[27mk[27me[27mr[27m [27me[27mx[27me[27mc[27m [27m-[27mi[27mt[27m [27mp[27mr[27mo[27md[27mu[27mc[27mt[27ms[27m-[27mm[27my[27ms[27mq[27ml[27m [27mm[27my[27ms[27mq[27ml[27m [27m-[27m-[27md[27me[27mf[27ma[27mu[27ml[27mt[27m-[27mc[27mh[27ma[27mr[27ma[27mc[27mt[27me[27mr[27m-[27ms[27me[27mt[27m=[27mu[27mt[27mf[27m8[27mm[27mb[27m4[27m [27m-[27mu[27mr[27mo[27mo[27mt[27m [27m-[27mp[?2004l
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 16
+Server version: 26.10.0 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2026, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> USE shop;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW TABLES;
++----------------+
+| Tables_in_shop |
++----------------+
+| products1      |
+| products2      |
++----------------+
+2 rows in set (0.002 sec)
+
+mysql> SELECT * FROM products1;
++------------------+-------+
+| name             | price |
++------------------+-------+
+| Дыни             |   800 |
+| Клубника         |   150 |
+| Яблоки           |   120 |
+| Лимоны           |   200 |
++------------------+-------+
+4 rows in set (0.000 sec)
+
+mysql> SELECT * FROM products2;
++------------------+-------+
+| name             | price |
++------------------+-------+
+| Дыни             |   800 |
+| Клубника         |   150 |
+| Каштаны          |   200 |
+| Хурма            |   350 |
++------------------+-------+
+4 rows in set (0.001 sec)
+
+mysql> SELECT * FROM products1 WHERE price > 150;
++--------------+-------+
+| name         | price |
++--------------+-------+
+| Дыни         |   800 |
+| Лимоны       |   200 |
++--------------+-------+
+2 rows in set (0.000 sec)
+
+mysql> SELECT name FROM products1;
++------------------+
+| name             |
++------------------+
+| Дыни             |
+| Клубника         |
+| Яблоки           |
+| Лимоны           |
++------------------+
+4 rows in set (0.001 sec)
+
+mysql> SELECT name FROM products1 UNION SELECT name FROM products2;
++------------------+
+| name             |
++------------------+
+| Дыни             |
+| Клубника         |
+| Яблоки           |
+| Лимоны           |
+| Каштаны          |
+| Хурма            |
++------------------+
+6 rows in set (0.001 sec)
+
+mysql> SELECT name, price FROM products1 EXCEPT SELECT name, price FROM products2;
++--------------+-------+
+| name         | price |
++--------------+-------+
+| Яблоки       |   120 |
+| Лимоны       |   200 |
++--------------+-------+
+2 rows in set (0.001 sec)
+
+mysql> SELECT name, price FROM products1 INTERSECT SELECT name, price FROM products2;
++------------------+-------+
+| name             | price |
++------------------+-------+
+| Дыни             |   800 |
+| Клубника         |   150 |
++------------------+-------+
+2 rows in set (0.001 sec)
+
+mysql> SELECT t1.name AS name1, t1.price AS price1, t2.name AS name2, t2.price AS price2 FROM products1 t1 CROSS JOIN products2 t2;
++------------------+--------+------------------+--------+
+| name1            | price1 | name2            | price2 |
++------------------+--------+------------------+--------+
+| Лимоны           |    200 | Дыни             |    800 |
+| Яблоки           |    120 | Дыни             |    800 |
+| Клубника         |    150 | Дыни             |    800 |
+| Дыни             |    800 | Дыни             |    800 |
+| Лимоны           |    200 | Клубника         |    150 |
+| Яблоки           |    120 | Клубника         |    150 |
+| Клубника         |    150 | Клубника         |    150 |
+| Дыни             |    800 | Клубника         |    150 |
+| Лимоны           |    200 | Каштаны          |    200 |
+| Яблоки           |    120 | Каштаны          |    200 |
+| Клубника         |    150 | Каштаны          |    200 |
+| Дыни             |    800 | Каштаны          |    200 |
+| Лимоны           |    200 | Хурма            |    350 |
+| Яблоки           |    120 | Хурма            |    350 |
+| Клубника         |    150 | Хурма            |    350 |
+| Дыни             |    800 | Хурма            |    350 |
++------------------+--------+------------------+--------+
+16 rows in set (0.000 sec)
+
+mysql> SELECT t1.name, t1.price AS price1, t2.price AS price2 FROM products1 t1 JOIN products2 t2 ON t1.name = t2.name;
++------------------+--------+--------+
+| name             | price1 | price2 |
++------------------+--------+--------+
+| Дыни             |    800 |    800 |
+| Клубника         |    150 |    150 |
++------------------+--------+--------+
+2 rows in set (0.001 sec)
+
+mysql> SELECT t1.name, t1.price AS price1, t2.price AS price2 FROM products1 t1 LEFT JOIN products2 t2 ON t1.name = t2.name;
++------------------+--------+--------+
+| name             | price1 | price2 |
++------------------+--------+--------+
+| Дыни             |    800 |    800 |
+| Клубника         |    150 |    150 |
+| Яблоки           |    120 |   NULL |
+| Лимоны           |    200 |   NULL |
++------------------+--------+--------+
+4 rows in set (0.001 sec)
+
+mysql> 
+mysql> \q
+Bye
+
+[1mWhat's next:[0m
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → [36mdocker debug products-mysql[0m
+    Learn more at https://docs.docker.com/go/debug-cli/
+[1m[7m%[27m[1m[0m                                                                                                                                                                [0m[27m[24m[Jchris@MacBook-Pro-Chris products-mysql % [K[?2004h[7mexit[27m[27me[27mx[27mi[27mt[?2004l
